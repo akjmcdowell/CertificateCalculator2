@@ -1,5 +1,5 @@
     // Fetch JSON data from GitHub
-    fetch('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/main/data.json') // Replace with your actual URL
+    fetch('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/data.json') // Replace with your actual URL
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
