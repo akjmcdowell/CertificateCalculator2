@@ -18,14 +18,19 @@
 
 <label for="brand-filter">Filter by Brand:</label>
 <select id="brand-filter">
-    <option value="all">All Brands</option>
+    <option value="all-brands">All Brands</option>
+    <!-- Options will be populated dynamically -->
+</select>
+
+<label for="model-filter">Filter by Model:</label>
+<select id="model-filter">
+    <option value="all-models">All Models</option>
     <!-- Options will be populated dynamically -->
 </select>
 
 <table id="data-table">
     <thead>
         <tr>
-            <th>Item</th>
             <th>Brand</th>
             <th>Model</th>
             <th>Zone 1</th>
@@ -56,6 +61,7 @@
         console.log(jsonData); // Log the JSON data for debugging
         populateTable(jsonData); // Populate the table initially
         populateBrandFilter(jsonData); // Populate the brand filter
+        populateModelFilter(jsonData); // Populate the model filter
     })
     .catch(error => {
         console.error('There was a problem with the fetch operation:', error);
@@ -90,10 +96,30 @@
         });
     }
 
+        // Populate the dropdown with unique models
+    function populateModelFilter(data) {
+        const modelFilter = document.getElementById('model-filter');
+        const models = [...new Set(data.map(item => item.Model))]; // Get unique models
+
+        models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelFilter.appendChild(option); // Append model options to the dropdown
+        });
+    }
+
     // Filter data based on selected brand
     document.getElementById('brand-filter').addEventListener('change', function() {
         const selectedBrand = this.value;
-        const filteredData = selectedBrand === 'all' ? jsonData : jsonData.filter(item => item.Brand === selectedBrand);
+        const filteredData = selectedBrand === 'all-brands' ? jsonData : jsonData.filter(item => item.Brand === selectedBrand);
+        populateTable(filteredData); // Update table with filtered data
+    });
+
+    // Filter data based on selected model
+    document.getElementById('model-filter').addEventListener('change', function() {
+        const selectedModel = this.value;
+        const filteredData = selectedModel === 'all-models' ? jsonData : jsonData.filter(item => item.model === selectedmodel);
         populateTable(filteredData); // Update table with filtered data
     });
 </script>
