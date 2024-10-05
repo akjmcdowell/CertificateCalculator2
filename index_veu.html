@@ -1,0 +1,137 @@
+<h1>Air Source Heat Pump Models - VEU 1D/3C</h1>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse; /* Ensures borders do not double */
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ccc; /* Adds border to cells */
+        padding: 10px;
+        text-align: left;
+    }
+    th {
+        background-color: #f4f4f4; /* Background color for header */
+    }
+</style>
+
+<label for="brand-filter">Filter by Brand:</label>
+<select id="brand-filter">
+    <option value="all-brands">All Brands</option>
+    <!-- Options will be populated dynamically -->
+</select>
+
+<label for="model-filter">Filter by Model:</label>
+<select id="model-filter">
+    <option value="all-models">All Models</option>
+    <!-- Options will be populated dynamically -->
+</select>
+
+<table id="data-table">
+    <thead>
+        <tr>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Zone 4 Bs</th>
+            <th>Zone 4 Be</th>
+            <th>Zone 5 Bs</th>
+            <th>Zone 5 Be</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Data will be populated here -->
+    </tbody>
+</table>
+
+<script>
+    let jsonData = []; // Declare jsonData at the top
+
+    // Fetch JSON data from GitHub
+    fetch('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/data.json')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        jsonData = data; // Assign fetched data to jsonData
+        console.log(jsonData); // Log the JSON data for debugging
+        populateTable(jsonData); // Populate the table initially
+        populateBrandFilter(jsonData); // Populate the brand filter
+        populateModelFilter(jsonData); // Populate the model filter
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+
+    // Function to populate the table with data
+    function populateTable(data) {
+        const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = ''; // Clear existing data
+
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            for (const key in item) {
+                const cell = document.createElement('td');
+                cell.textContent = item[key]; // Populate cell with data
+                row.appendChild(cell); // Append cell to row
+            }
+            tableBody.appendChild(row); // Append row to table body
+        });
+    }
+
+    // Populate the dropdown with unique brands
+    function populateBrandFilter(data) {
+        const brandFilter = document.getElementById('brand-filter');
+        const brands = [...new Set(data.map(item => item.Brand))]; // Get unique brands
+
+        brands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandFilter.appendChild(option); // Append brand options to the dropdown
+        });
+    }
+
+    // Populate the dropdown with models based on selected brand
+    function populateModelFilter(data, selectedBrand = 'all-brands') {
+        const modelFilter = document.getElementById('model-filter');
+        modelFilter.innerHTML = '<option value="all-models">All Models</option>'; // Reset model options
+
+        const filteredModels = selectedBrand === 'all-brands'
+            ? [...new Set(data.map(item => item.Model))]
+            : [...new Set(data.filter(item => item.Brand === selectedBrand).map(item => item.Model))];
+
+        filteredModels.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelFilter.appendChild(option); // Append model options to the dropdown
+        });
+    }
+
+    // Filter data based on selected brand
+    document.getElementById('brand-filter').addEventListener('change', function() {
+        const selectedBrand = this.value;
+        populateModelFilter(jsonData, selectedBrand); // Update model filter based on selected brand
+        const filteredData = selectedBrand === 'all-brands' ? jsonData : jsonData.filter(item => item.Brand === selectedBrand);
+        populateTable(filteredData); // Update table with filtered data
+    });
+
+    // Filter data based on selected model
+    document.getElementById('model-filter').addEventListener('change', function() {
+        const selectedBrand = document.getElementById('brand-filter').value;
+        const selectedModel = this.value;
+        
+        const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
+            ? jsonData
+            : jsonData.filter(item => 
+                (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
+                (selectedModel === 'all-models' || item.Model === selectedModel)
+            );
+
+        populateTable(filteredData); // Update table with filtered data
+    });
+</script>
