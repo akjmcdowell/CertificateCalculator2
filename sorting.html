@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sort Table Example</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+            cursor:pointer;
+        }
+        .arrow {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        .ascending::after {
+            content: ' ▲';
+        }
+        .descending::after {
+            content: ' ▼';
+        }
+    </style>
+</head>
+<body>
+<h1>Air Source Heat Pump Models - VEU 1D/3C</h1>
+
+<table id="data-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0, this)">Brand<span class="arrow"></span></th>
+            <th onclick="sortTable(1, this)">Model<span class="arrow"></span></th>
+            <th onclick="sortTable(2, this)">VEEC: Replace Elec (1D) Zone 4<span class="arrow"></span></th>
+            <th onclick="sortTable(3, this)">VEEC: Replace Elec (1D) Zone 5<span class="arrow"></span></th>
+            <th onclick="sortTable(4, this)">VEEC: Replace Gas (3C) Zone 4<span class="arrow"></span></th>
+            <th onclick="sortTable(5, this)">VEEC: Replace Gas (3C) Zone 5<span class="arrow"></span></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Brand A</td>
+            <td>Model X</td>
+            <td>10</td>
+            <td>20</td>
+            <td>30</td>
+            <td>40</td>
+        </tr>
+        <tr>
+            <td>Brand B</td>
+            <td>Model Y</td>
+            <td>5</td>
+            <td>15</td>
+            <td>25</td>
+            <td>35</td>
+        </tr>
+        <tr>
+            <td>Brand C</td>
+            <td>Model Z</td>
+            <td>12</td>
+            <td>22</td>
+            <td>32</td>
+            <td>42</td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    let currentSortColumn = -1; // Keep track of the currently sorted column
+    let currentSortDirection = 'ascending'; // Keep track of the sorting direction
+
+    function sortTable(columnIndex, header) {
+        const table = document.getElementById("data-table");
+        const rows = Array.from(table.getElementsByTagName("tr")).slice(1); // Get all rows except the header
+
+        // Reset all headers' arrows
+        Array.from(table.getElementsByTagName("th")).forEach(th => {
+            th.classList.remove('ascending', 'descending');
+        });
+
+        // Determine sorting direction
+        if (columnIndex === currentSortColumn) {
+            currentSortDirection = currentSortDirection === 'ascending' ? 'descending' : 'ascending';
+        } else {
+            currentSortDirection = 'ascending'; // Reset to ascending if a new column is sorted
+        }
+        currentSortColumn = columnIndex;
+
+        // Add the appropriate class for the arrow direction
+        if (header) {
+            header.classList.add(currentSortDirection);
+        }
+
+        // Sort rows based on current direction
+        rows.sort((rowA, rowB) => {
+            const xContent = rowA.getElementsByTagName("td")[columnIndex].textContent || "";
+            const yContent = rowB.getElementsByTagName("td")[columnIndex].textContent || "";
+
+            const isNumber = !isNaN(parseFloat(xContent)) && isFinite(xContent);
+            
+            if (isNumber) {
+                return currentSortDirection === 'ascending' ? parseFloat(xContent) - parseFloat(yContent) : parseFloat(yContent) - parseFloat(xContent);
+            } else {
+                return currentSortDirection === 'ascending' ? xContent.localeCompare(yContent) : yContent.localeCompare(xContent);
+            }
+        });
+
+        // Append sorted rows back to the table body
+        const tableBody = table.getElementsByTagName('tbody')[0];
+        rows.forEach(row => tableBody.appendChild(row));
+    }
+</script>
+
+</body>
+</html>
