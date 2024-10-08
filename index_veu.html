@@ -5,17 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Air Source Heat Pump Models - VEU 1D/3C</title>
     <style>
+        /* Table container styling */
+        .table-container {
+            overflow-x: auto; /* Allow horizontal scroll */
+            white-space: nowrap; /* Prevent text wrapping */
+            background-color: #fff; /* Set background color to white */
+            border: 1px solid #ccc; /* Optional: add a border for better separation */
+            padding: 10px; /* Optional: add padding for better spacing */
+            border-radius: 5px; /* Optional: add rounded corners */
+        }
         table {
             width: 100%;
             border-collapse: collapse; /* Ensures borders do not double */
             margin-top: 20px;
         }
-        th, td {
+        td {
             border: 1px solid #ccc; /* Adds border to cells */
             padding: 10px;
             text-align: center;
+            background-color: white; /* Background color for header */
         }
         th {
+            border: 1px solid #ccc; /* Adds border to cells */
+            padding: 10px;
+            text-align: center;
             background-color: #f4f4f4; /* Background color for header */
             cursor: pointer; /* Change cursor to pointer for clickable headers */
         }
@@ -29,6 +42,17 @@
         .descending::after {
             content: ' ▼'; /* Down arrow for descending sort */
         }
+                /* Responsive styles */
+                @media (max-width: 767px) {
+            .table-container {
+                overflow-x: auto; /* Allow horizontal scroll */
+                white-space: nowrap; /* Prevent text wrapping */
+            }
+            th, td {
+                padding: 8px; /* Adjust padding for smaller screens */
+                font-size: 14px; /* Adjust font size if necessary */
+            }
+        }
     </style>
 </head>
 <body>
@@ -36,6 +60,13 @@
 <p>
     Use this calculator to review the number of Victorian Energy Efficiency Certificates (VEECs) that are eligible for approved products on the <a href="https://www.veu-registry.vic.gov.au/Public/ProductRegistrySearch.aspx" target="_blank">VEU Registry</a>.
 </p>
+
+<label for="year"><b>Postcode Lookup:</b></label>
+<input type="text" id="postcode" placeholder="Enter postcode" />
+<button id="lookup-button">Lookup</button>
+<div id="result"></div>
+
+<br>
 
 <p>
     Select the year of installation and metropolitan or regional area to reflect ther correct number of certificates for a given scenario.
@@ -90,12 +121,45 @@
 </table>
 
 <script>
+
     let jsonData = []; // Declare jsonData at the top
+    let data_VEU = [];
+    let data_postcodes = [];
     let currentSortColumn = -1; // Keep track of the currently sorted column
     let currentSortDirection = 'ascending'; // Keep track of the sorting direction
+    let calculatedValues = [];
 
-   // Declare variables for VEU parameters
-   let EEF, EEFm, AF_1D, SEF_1D, AEF_1D, AF_3C, SEF_3C, AEF_3C, i;
+    // Declare variables for VEU parameters
+    let EEF, EEFm, AF_1D, SEF_1D, AEF_1D, AF_3C, SEF_3C, AEF_3C, i;
+    
+    main();
+
+    async function main() {
+        try {
+            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU.json');
+            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/Postcodes.json');
+
+            // Check if data_VEU is an array
+            if (!Array.isArray(data_VEU)) {
+                throw new Error('data_VEU is not an array');
+            }
+            populateTable(data_VEU); // Populate the table initially
+            populateBrandFilter(data_VEU); // Populate the brand filter
+            populateModelFilter(data_VEU); // Populate the model filter
+        } catch (error) {
+            console.error('Error during initialization:', error);
+        }
+    }
+
+    // Fetch JSON data from GitHub
+    async function fetchData(URL) {
+        const response = await fetch(URL);
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const jsonData = await response.json();
+        return jsonData;
+    }
 
     // Function to update VEU parameters based on dropdown selections
     function updateVEUParameters() {
@@ -145,32 +209,12 @@
         }
     }
 
-
-    // Fetch JSON data from GitHub
-    fetch('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU.json')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
-    .then(data => {
-        jsonData = data; // Assign fetched data to jsonData
-        console.log(jsonData); // Log the JSON data for debugging
-        populateTable(jsonData); // Populate the table initially
-        populateBrandFilter(jsonData); // Populate the brand filter
-        populateModelFilter(jsonData); // Populate the model filter
-    })
-    .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-    });
-
     // Function to populate the table with data
     function populateTable(data) {
         const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
         tableBody.innerHTML = ''; // Clear existing data
         updateVEUParameters();
-
+        
         data.forEach(item => {
             const row = document.createElement('tr');         
             
@@ -191,23 +235,13 @@
             let VEEC_3C_Z4 = document.createElement('td');
             let VEEC_3C_Z5 = document.createElement('td');
 
-            if (Bs_Z4>0) {
-                VEEC_1D_Z4.textContent = Math.round((AF_1D - SEF_1D * Bs_Z4 - AEF_1D * Be_Z4) * EEF);
-                VEEC_3C_Z4.textContent = Math.round(AF_3C - (SEF_3C * Bs_Z4 + AEF_3C * Be_Z4) * EEFm);
-                console.log("Bs_Z4:", Bs_Z4, "Be_Z4:", Be_Z4, "AF_1D:",AF_1D);
-            } else {
-                VEEC_1D_Z4.textContent = 0;
-                VEEC_3C_Z4.textContent = 0;
-            }
+            // Calculate VEEC values
+            VEEC_1D_Z4.textContent = Bs_Z4 > 0 ? Math.round((AF_1D - SEF_1D * Bs_Z4 - AEF_1D * Be_Z4) * EEF) : 0;
+            VEEC_3C_Z4.textContent = Bs_Z4 > 0 ? Math.round(AF_3C - (SEF_3C * Bs_Z4 + AEF_3C * Be_Z4) * EEFm) : 0;
 
-            if (Bs_Z5>0) {
-                VEEC_1D_Z5.textContent = Math.round((AF_1D - SEF_1D * Bs_Z5 - AEF_1D * Be_Z5) * EEF);
-                VEEC_3C_Z5.textContent = Math.round(AF_3C - (SEF_3C * Bs_Z5 + AEF_3C * Be_Z5) * EEFm);
-            } else {
-                VEEC_1D_Z5.textContent = 0;
-                VEEC_3C_Z5.textContent = 0;
-            }
-         
+            VEEC_1D_Z5.textContent = Bs_Z5 > 0 ? Math.round((AF_1D - SEF_1D * Bs_Z5 - AEF_1D * Be_Z5) * EEF) : 0;
+            VEEC_3C_Z5.textContent = Bs_Z5 > 0 ? Math.round(AF_3C - (SEF_3C * Bs_Z5 + AEF_3C * Be_Z5) * EEFm) : 0;
+
             // Append cells to the row
             row.appendChild(brandCell);
             row.appendChild(modelCell);
@@ -218,6 +252,16 @@
 
             // Append the row to the table body
             tableBody.appendChild(row);
+
+            // Store calculated values in the array
+            calculatedValues.push({
+                brand: item.Brand,
+                model: item.Model,
+                VEEC_1D_Z4: VEEC_1D_Z4.textContent,
+                VEEC_1D_Z5: VEEC_1D_Z5.textContent,
+                VEEC_3C_Z4: VEEC_3C_Z4.textContent,
+                VEEC_3C_Z5: VEEC_3C_Z5.textContent
+            });
         });
     }
 
@@ -234,20 +278,16 @@
         });
     }
 
-    // Populate the dropdown with models based on selected brand
-    function populateModelFilter(data, selectedBrand = 'all-brands') {
+   // Function to populate model filter dropdown
+   function populateModelFilter(data) {
         const modelFilter = document.getElementById('model-filter');
-        modelFilter.innerHTML = '<option value="all-models">All Models</option>'; // Reset model options
+        const models = [...new Set(data.map(item => item.Model))]; // Get unique models
 
-        const filteredModels = selectedBrand === 'all-brands'
-            ? [...new Set(data.map(item => item.Model))]
-            : [...new Set(data.filter(item => item.Brand === selectedBrand).map(item => item.Model))];
-
-        filteredModels.forEach(model => {
+        models.forEach(model => {
             const option = document.createElement('option');
             option.value = model;
             option.textContent = model;
-            modelFilter.appendChild(option); // Append model options to the dropdown
+            modelFilter.appendChild(option);
         });
     }
 
@@ -258,8 +298,8 @@
         const selectedModel = document.getElementById('model-filter').value;
 
         const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? jsonData
-            : jsonData.filter(item => 
+            ? data_VEU
+            : data_VEU.filter(item => 
                 (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
                 (selectedModel === 'all-models' || item.Model === selectedModel)
             );
@@ -273,8 +313,8 @@
         const selectedModel = document.getElementById('model-filter').value;
 
         const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? jsonData
-            : jsonData.filter(item => 
+            ? data_VEU
+            : data_VEU.filter(item => 
                 (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
                 (selectedModel === 'all-models' || item.Model === selectedModel)
             );
@@ -285,8 +325,8 @@
     // Filter data based on selected brand
     document.getElementById('brand-filter').addEventListener('change', function() {
         const selectedBrand = this.value;
-        populateModelFilter(jsonData, selectedBrand); // Update model filter based on selected brand
-        const filteredData = selectedBrand === 'all-brands' ? jsonData : jsonData.filter(item => item.Brand === selectedBrand);
+        populateModelFilter(data_VEU, selectedBrand); // Update model filter based on selected brand
+        const filteredData = selectedBrand === 'all-brands' ? data_VEU : data_VEU.filter(item => item.Brand === selectedBrand);
         populateTable(filteredData); // Update table with filtered data
     });
 
@@ -296,8 +336,8 @@
         const selectedModel = this.value;
         
         const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? jsonData
-            : jsonData.filter(item => 
+            ? data_VEU
+            : data_VEU.filter(item => 
                 (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
                 (selectedModel === 'all-models' || item.Model === selectedModel)
             );
@@ -349,6 +389,45 @@
         const tableBody = table.getElementsByTagName('tbody')[0];
         rows.forEach(row => tableBody.appendChild(row));
     }
+
+    function lookupPostcode() {
+        const postcodeInput = document.getElementById('postcode').value.trim();
+        const resultDiv = document.getElementById('result');
+
+        // Find the postcode in the data
+        const postcodeInfo = data_postcodes.find(item => item.Postcode === postcodeInput);
+
+        if (postcodeInfo) {
+            // Display the results
+            resultDiv.innerHTML = `
+                <strong>State:</strong> ${postcodeInfo.State} <br>
+                <strong>Location:</strong> ${postcodeInfo.Location} <br>
+                <strong>VEU Zone:</strong> ${postcodeInfo.Zone_VEU} <br>
+            `;
+
+            // Change the location dropdown selection based on the postcode
+            const locationDropdown = document.getElementById('location');
+            locationDropdown.value = postcodeInfo.Location.toLowerCase(); // Convert to lowercase to match dropdown values
+
+            // Trigger change event to update the VEU parameters and table
+            locationDropdown.dispatchEvent(new Event('change'));
+        } else {
+            // Display error message
+            resultDiv.innerHTML = `<strong>No data found for postcode:</strong> ${postcodeInput}`;
+        }
+    }
+
+    // Add event listener for button click
+    document.getElementById('lookup-button').addEventListener('click', lookupPostcode);
+
+    // Add event listener for Enter key press
+    document.getElementById('postcode').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            lookupPostcode();
+        }
+    });
+
+    console.log(calculatedValues); // Log calculated values for debugging
 
 </script>
 
