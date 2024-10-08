@@ -57,9 +57,7 @@
 </head>
 <body>
 <h1>Air Source Heat Pump Models - VEU 1D/3C</h1>
-<p>
-    Use this calculator to review the number of Victorian Energy Efficiency Certificates (VEECs) that are eligible for approved products on the <a href="https://www.veu-registry.vic.gov.au/Public/ProductRegistrySearch.aspx" target="_blank">VEU Registry</a>.
-</p>
+<p>Use this calculator to review the number of Victorian Energy Efficiency Certificates (VEECs) that are eligible for approved products on the <a href="https://www.veu-registry.vic.gov.au/Public/ProductRegistrySearch.aspx" target="_blank">VEU Registry</a>.</p>
 
 <label for="year"><b>Postcode Lookup:</b></label>
 <input type="text" id="postcode" placeholder="Enter postcode" />
@@ -68,41 +66,54 @@
 
 <br>
 
-<p>
-    Select the year of installation and metropolitan or regional area to reflect ther correct number of certificates for a given scenario.
-</p>
+<p>Select the year of installation and metropolitan or regional area to reflect the correct number of certificates for a given installation.</p>
 
-<label for="location"><b>Choose Location:</b></label>
-<select id="location" name="location">
-  <option value="metropolitan">Metropolitan</option>
-  <option value="regional">Regional</option>
-</select>
+<div class="filter-container">
+    <label for="location"><b>Choose Location:</b></label>
+    <select id="location" name="location">
+        <option value="metropolitan">Metropolitan</option>
+        <option value="regional">Regional</option>
+    </select>
 
-<br><br>
+    <br>
 
-<label for="year"><b>Year of Installation:</b></label>
-<select id="year" name="year">
-  <option value="2024">2024</option>
-  <option value="2025">2025</option>
-</select>
+    <label for="year"><b>Year of Installation:</b></label>
+    <select id="year" name="year">
+        <option value="2024">2024</option>
+        <option value="2025">2025</option>
+    </select>
+</div>
 
-<br><br>
+<br>
 
-<label for="brand-filter">Filter by Brand:</label>
-<select id="brand-filter">
-    <option value="all-brands">All Brands</option>
-    <!-- Options will be populated dynamically -->
-</select>
-
-<label for="model-filter">Filter by Model:</label>
-<select id="model-filter">
-    <option value="all-models">All Models</option>
-    <!-- Options will be populated dynamically -->
-</select>
-
-<p>
-    Click on any header to sort by alphabetical or numerical order.
-</p>
+<div class="filter-container">
+    <label for="brand-filter">Filter by Brand(s):</label>
+    <select id="brand-filter" multiple size = "10">
+      <option value="all-brands" selected>All Brands</option>
+      <!-- Options will be populated dynamically -->
+    </select>
+  
+    <label for="model-filter">Filter by Model(s):</label>
+    <select id="model-filter" multiple  size = "10">
+      <option value="all-models" selected>All Models</option>
+      <!-- Options will be populated dynamically -->
+    </select>
+</div>
+  
+<style>
+    .filter-container {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Adjust as needed */
+    }
+  
+    .filter-container label,
+    .filter-container select {
+      display: inline-block;
+    }
+</style>
+  
+<p>Click on any header to sort by alphabetical or numerical order.</p>
 
 <table id="data-table">
     <thead>
@@ -278,18 +289,35 @@
         });
     }
 
-   // Function to populate model filter dropdown
-   function populateModelFilter(data) {
-        const modelFilter = document.getElementById('model-filter');
-        const models = [...new Set(data.map(item => item.Model))]; // Get unique models
+// Update the model dropdown based on selected brands
+function populateModelFilter(data, selectedBrands = ['all-brands']) {
+    const modelFilter = document.getElementById('model-filter');
+    modelFilter.innerHTML = ''; // Clear the existing options
 
-        models.forEach(model => {
-            const option = document.createElement('option');
-            option.value = model;
-            option.textContent = model;
-            modelFilter.appendChild(option);
-        });
-    }
+    // Add the default "All Models" option
+    const allModelsOption = document.createElement('option');
+    allModelsOption.value = 'all-models';
+    allModelsOption.textContent = 'All Models';
+    allModelsOption.selected = true; // Set default selection to "All Models"
+    modelFilter.appendChild(allModelsOption);
+
+    // Filter models based on selected brands
+    const filteredModels = selectedBrands.includes('all-brands')
+        ? data.map(item => item.Model) // If all brands, show all models
+        : data.filter(item => selectedBrands.includes(item.Brand)).map(item => item.Model); // Show only models for selected brands
+
+    // Remove duplicates and sort models alphabetically
+    const uniqueModels = [...new Set(filteredModels)].sort();
+
+    // Add the filtered models to the dropdown
+    uniqueModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        modelFilter.appendChild(option);
+    });
+}
+
 
     // Event listeners for dropdown changes
     document.getElementById('location').addEventListener('change', function() {
@@ -322,28 +350,42 @@
         populateTable(filteredData); // Update table with filtered data
     });
 
-    // Filter data based on selected brand
-    document.getElementById('brand-filter').addEventListener('change', function() {
-        const selectedBrand = this.value;
-        populateModelFilter(data_VEU, selectedBrand); // Update model filter based on selected brand
-        const filteredData = selectedBrand === 'all-brands' ? data_VEU : data_VEU.filter(item => item.Brand === selectedBrand);
-        populateTable(filteredData); // Update table with filtered data
-    });
+// Filter data based on selected brand(s)
+document.getElementById('brand-filter').addEventListener('change', function() {
+    const selectedBrands = Array.from(this.selectedOptions).map(option => option.value); // Get all selected brands as an array
 
-    // Filter data based on selected model
-    document.getElementById('model-filter').addEventListener('change', function() {
-        const selectedBrand = document.getElementById('brand-filter').value;
-        const selectedModel = this.value;
-        
-        const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? data_VEU
-            : data_VEU.filter(item => 
-                (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
-                (selectedModel === 'all-models' || item.Model === selectedModel)
-            );
+    // Update the model dropdown based on selected brands
+    populateModelFilter(data_VEU, selectedBrands);
 
-        populateTable(filteredData); // Update table with filtered data
-    });
+    // Filter data for the table based on both brand and model
+    const selectedModel = document.getElementById('model-filter').value;
+    const filteredData = (selectedBrands.includes('all-brands') && selectedModel === 'all-models')
+        ? data_VEU
+        : data_VEU.filter(item => 
+            (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) && 
+            (selectedModel === 'all-models' || item.Model === selectedModel)
+        );
+
+    populateTable(filteredData); // Update table with filtered data
+});
+
+
+// Event listener for model change
+document.getElementById('model-filter').addEventListener('change', function() {
+    const selectedBrand = document.getElementById('brand-filter').value;
+    const selectedModel = this.value;
+    
+    // Filter data based on both brand and model
+    const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
+        ? data_VEU
+        : data_VEU.filter(item => 
+            (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
+            (selectedModel === 'all-models' || item.Model === selectedModel)
+        );
+
+    populateTable(filteredData); // Update the table
+});
+
 
     function sortTable(columnIndex, header) {
         const table = document.getElementById("data-table");
