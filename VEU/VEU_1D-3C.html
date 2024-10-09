@@ -145,8 +145,8 @@
 
     async function main() {
         try {
-            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU.json');
-            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/Postcodes.json');
+            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/VEU.json');
+            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/Postcodes.json');
 
             if (!Array.isArray(data_VEU)) throw new Error('data_VEU is not an array');
 
