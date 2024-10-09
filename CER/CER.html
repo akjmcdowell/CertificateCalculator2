@@ -52,7 +52,7 @@
 </head>
 <body>
 <h1>Air Source Heat Pump Models - CER V54</h1>
-<p>Use this calculator to review the number of STCs that are eligible for approved products on the <a href="https://cer.gov.au/schemes/renewable-energy-target/small-scale-renewable-energy-scheme/small-scale-renewable-energy-systems/solar-water-heaters/register-solar-water-heaters" target="_blank">CER Register of solar water heaters</a>.</p>
+<p>Use this calculator to review and compare the number of STCs eligible for approved products on the <a href="https://cer.gov.au/schemes/renewable-energy-target/small-scale-renewable-energy-scheme/small-scale-renewable-energy-systems/solar-water-heaters/register-solar-water-heaters" target="_blank">CER Register of solar water heaters</a>.</p>
 
 <label for="year"><b>Postcode Lookup:</b></label>
 <input type="text" id="postcode" placeholder="Enter postcode" />
@@ -76,10 +76,12 @@
         <option value="2030">2030</option>
     </select>
 </div>
+<p><i>Note: STC values published on the CER Register are for a 10-year Deeming Period. The Deeming Period reduces each year, <a href="https://cer.gov.au/schemes/renewable-energy-target/small-scale-renewable-energy-scheme/small-scale-technology-certificates/calculate-small-scale-technology-certificate-entitlements#:~:text=The%20deeming%20period%20is%20an,can%20create%20for%20your%20system." target="_blank">learn more here</a></i>.</p>
 
 <br>
 
 <p>Filter by one or more brands or models:</p>
+<p><i>Hint: hold down Ctrl key to select multiple brands and/or models.</i></p>
 
  <div class="filter-container"> 
     <label for="brand-filter">Filter by Brand(s):</label>
@@ -109,7 +111,7 @@
 </style>
 
 <br>
-<p>Click on any header to sort by alphabetical or numerical order.</p>
+<p>Click on any header to sort STC values by alphabetical or numerical order.</p>
 
 <div class="table-container">
     <table id="data-table">
@@ -142,7 +144,7 @@
     async function main() {
         try {
             data_CER = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/CER/CER_V54.json');
-            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/Postcodes.json');
+            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/CER/CER_POSTCODES.json');
 
             if (!Array.isArray(data_CER)) throw new Error('data_CER is not an array');
 
@@ -165,14 +167,14 @@
         const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
         tableBody.innerHTML = ''; // Clear existing data
 
-        const year = document.getElementById("year").value;
-        year = (year === 'Register Value') ? 2021 : year;
+        let year = document.getElementById("year").value;
+        year = (year === 'Register-Value') ? 2021 : year;
         const DeemingPeriod = 2031 - year;
                 
         data.forEach(item => {
             const row = document.createElement('tr');         
              
-            // Create individual cells (td) and assign values
+            // Create individual cells (td) and assign values for brand/model
             let brandCell = document.createElement('td');
             brandCell.textContent = item.Brand;
             row.appendChild(brandCell);
@@ -181,11 +183,13 @@
             modelCell.textContent = item.Model;
             row.appendChild(modelCell);
 
+            // Add STCs to table
             for (let i = 1; i <= 5; i++) {
                 let STC_element = document.createElement('td');
                 let STC = item[`Zone ${i}`];
-                STC_element.textContent = Math.floor(STC*DeemingPeriod/10);
-                row.appendChild(STC_element)
+                STC_year = Math.floor(STC*DeemingPeriod/10);
+                STC_element.textContent = !isNaN(STC_year) ? STC_year : 'N/A';
+                row.appendChild(STC_element);
             }
 
             // Append the row to the table body
@@ -285,7 +289,11 @@
         // Determine sort direction
         let sortDirection = 'ascending'; // Default direction
         if (currentSortColumn === columnIndex) {
+            // Toggle sort direction if clicking the same column
             sortDirection = currentSortDirection === 'ascending' ? 'descending' : 'ascending';
+        } else {
+            // Sort descending on the first click
+            sortDirection = currentSortColumn === -1 ? 'descending' : 'ascending';
         }
 
         // Sort rows based on selected column
@@ -312,6 +320,7 @@
         currentSortDirection = sortDirection;
     }
 
+
     function resetSortingIndicators() {
         const thElements = document.querySelectorAll('#data-table th');
         thElements.forEach(th => {
@@ -328,18 +337,7 @@
 
         if (postcodeInfo) {
             // Display the results
-            resultDiv.innerHTML = `
-                <strong>State:</strong> ${postcodeInfo.State} <br>
-                <strong>Location:</strong> ${postcodeInfo.Location} <br>
-                <strong>CER Zone:</strong> ${postcodeInfo.Zone_VEU} <br>
-            `;
-
-            // Change the location dropdown selection based on the postcode
-            const locationDropdown = document.getElementById('location');
-            locationDropdown.value = postcodeInfo.Location.toLowerCase(); // Convert to lowercase to match dropdown values
-
-            // Trigger change event to update the VEU parameters and table
-            locationDropdown.dispatchEvent(new Event('change'));
+            resultDiv.innerHTML = `<strong>CER Zone:</strong> ${postcodeInfo.Zone} <br>`;
         } else {
             // Display error message
             resultDiv.innerHTML = `<strong>No data found for postcode:</strong> ${postcodeInput}`;
@@ -378,46 +376,28 @@
         }
     });
 
-    // Event listeners for dropdown changes
-    document.getElementById('location').addEventListener('change', function() {
-        updateVEUParameters(); // Update parameters on location change
-        const selectedBrand = document.getElementById('brand-filter').value;
-        const selectedModel = document.getElementById('model-filter').value;
+    document.getElementById('year').addEventListener('change', function() {
+        const selectedBrands = Array.from(document.getElementById('brand-filter').selectedOptions).map(option => option.value);
+        const selectedModels = Array.from(document.getElementById('model-filter').selectedOptions).map(option => option.value);
 
-        const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
+        // Default to "all-brands" and "all-models" if none selected
+        if (selectedBrands.length === 0) {
+            selectedBrands.push('all-brands');
+        }
+        if (selectedModels.length === 0) {
+            selectedModels.push('all-models');
+        }
+
+        // Filter data based on selections
+        const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
             ? data_CER
-            : data_CER.filter(item => 
-                (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
-                (selectedModel === 'all-models' || item.Model === selectedModel)
+            : data_CER.filter(item =>
+                (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) &&
+                (selectedModels.includes('all-models') || selectedModels.includes(item.Model))
             );
 
         populateTable(filteredData); // Update table with filtered data
     });
-
-    document.getElementById('year').addEventListener('change', function() {
-    updateVEUParameters(); // Update parameters on year change
-
-    const selectedBrands = Array.from(document.getElementById('brand-filter').selectedOptions).map(option => option.value);
-    const selectedModels = Array.from(document.getElementById('model-filter').selectedOptions).map(option => option.value);
-
-    // Default to "all-brands" and "all-models" if none selected
-    if (selectedBrands.length === 0) {
-        selectedBrands.push('all-brands');
-    }
-    if (selectedModels.length === 0) {
-        selectedModels.push('all-models');
-    }
-
-    // Filter data based on selections
-    const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
-        ? data_CER
-        : data_CER.filter(item =>
-            (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) &&
-            (selectedModels.includes('all-models') || selectedModels.includes(item.Model))
-        );
-
-    populateTable(filteredData); // Update table with filtered data
-});
 
 
 </script>
