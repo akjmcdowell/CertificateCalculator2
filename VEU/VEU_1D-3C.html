@@ -145,7 +145,7 @@
 
     async function main() {
         try {
-            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/VEU.json');
+            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/VEU_1D3C.json');
             data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/Postcodes.json');
 
             if (!Array.isArray(data_VEU)) throw new Error('data_VEU is not an array');
@@ -211,10 +211,10 @@
         data.forEach(item => {
             const row = document.createElement('tr');         
             
-            let Bs_Z4 = item["Zone 4 Bs"];
-            let Bs_Z5 = item["Zone 5 Bs"];
-            let Be_Z4 = item["Zone 4 Be"];
-            let Be_Z5 = item["Zone 5 Be"];
+            let Bs_Z4 = item["Zone 4 Bs (GJ\/year) (step down load size)"];
+            let Bs_Z5 = item["Zone 5 Bs (GJ\/year) (step down load size)"];
+            let Be_Z4 = item["Zone 4 Be (GJ\/year) (step down load size)"];
+            let Be_Z5 = item["Zone 5 Be (GJ\/year) (step down load size)"];
             
             // Create individual cells (td) and assign values
             let brandCell = document.createElement('td');
@@ -349,9 +349,13 @@ function updateTableForSelectedBrandsModels() {
         const rows = Array.from(tbody.rows);
         
         // Determine sort direction
-        let sortDirection = 'ascending'; // Default direction
+        let sortDirection = 'descending'; // Default direction
         if (currentSortColumn === columnIndex) {
+            // Toggle sort direction if clicking the same column
             sortDirection = currentSortDirection === 'ascending' ? 'descending' : 'ascending';
+        } else {
+            // Sort descending on the first click
+            sortDirection = currentSortColumn === -1 ? 'descending' : 'ascending';
         }
 
         // Sort rows based on selected column

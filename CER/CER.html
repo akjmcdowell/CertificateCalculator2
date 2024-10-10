@@ -143,7 +143,7 @@
 
     async function main() {
         try {
-            data_CER = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/CER/CER_V54.json');
+            data_CER = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/CER/CER.json');
             data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/CER/CER_POSTCODES.json');
 
             if (!Array.isArray(data_CER)) throw new Error('data_CER is not an array');
@@ -207,8 +207,11 @@
         allBrandsOption.textContent = 'All Brands';
         brandFilter.appendChild(allBrandsOption);
 
-        const uniqueBrands = [...new Set(data.map(item => item.Brand))].sort();
+        // Extract unique brands and sort them case-insensitively
+        const uniqueBrands = [...new Set(data.map(item => item.Brand))]
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
+        // Populate the brand filter dropdown
         uniqueBrands.forEach(brand => {
             const option = document.createElement('option');
             option.value = brand;
@@ -296,15 +299,21 @@
             sortDirection = currentSortColumn === -1 ? 'descending' : 'ascending';
         }
 
-        // Sort rows based on selected column
+        // Sort rows based on selected column using localeCompare for string comparison
         rows.sort((rowA, rowB) => {
             const cellA = rowA.cells[columnIndex].innerText;
             const cellB = rowB.cells[columnIndex].innerText;
 
+            // If both are numbers, compare them as numbers, otherwise use localeCompare for strings
             const a = isNaN(cellA) ? cellA : parseFloat(cellA);
             const b = isNaN(cellB) ? cellB : parseFloat(cellB);
 
-            return sortDirection === 'ascending' ? (a > b ? 1 : -1) : (a < b ? 1 : -1);
+            if (typeof a === 'string' && typeof b === 'string') {
+                return sortDirection === 'ascending' ? a.localeCompare(b, undefined, { sensitivity: 'base' }) 
+                                                    : b.localeCompare(a, undefined, { sensitivity: 'base' });
+            } else {
+                return sortDirection === 'ascending' ? (a > b ? 1 : -1) : (a < b ? 1 : -1);
+            }
         });
 
         // Clear existing rows and append sorted rows
@@ -319,6 +328,7 @@
         currentSortColumn = columnIndex;
         currentSortDirection = sortDirection;
     }
+
 
 
     function resetSortingIndicators() {
