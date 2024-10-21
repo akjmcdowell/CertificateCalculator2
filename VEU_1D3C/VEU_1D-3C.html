@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Air Source Heat Pump Models - VEU 1D/3C</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Table container styling */
         .table-container {
@@ -112,6 +113,7 @@
 
 <br>
 <p>Click on any header to sort by alphabetical or numerical order.</p>
+<button id="export-button">Export Data</button>
 
 <div class="table-container">
     <table id="data-table">
@@ -488,6 +490,30 @@ function updateTableForSelectedBrandsModels() {
 
     populateTable(filteredData); // Update table with filtered data
 });
+
+function exportExcel() {
+        // Get the table element
+        const table = document.getElementById('data-table');
+
+        // Create a new workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Convert the HTML table to a worksheet
+        const ws = XLSX.utils.table_to_sheet(table);
+        
+        // Append the worksheet to the workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+        // Export the workbook as an Excel file
+        // Create a date string in the format YYYY-MM-DD
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        XLSX.writeFile(wb, `VEEC_1D3C_data_${dateString}.xlsx`);
+    }
+
+    document.getElementById('export-button').addEventListener('click', function () {
+        exportExcel();
+    });
 
 
 </script>

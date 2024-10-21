@@ -49,6 +49,38 @@
                 font-size: 14px; /* Adjust font size if necessary */
             }
         }
+         /* Modal styles */
+         #email-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        #modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            text-align: center;
+        }
+        #close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        #close-modal:hover,
+        #close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -114,6 +146,15 @@
 <br>
 <p>Click on any header to sort STC values by alphabetical or numerical order.</p>
 <button id="export-button">Export Data</button>
+<!-- Modal for Email Input -->
+<div id="email-modal">
+    <div id="modal-content">
+        <span id="close-modal">&times;</span>
+        <h2>Enter your Email</h2>
+        <input type="email" id="email-input" placeholder="Your email" required>
+        <button id="submit-email">Submit</button>
+    </div>
+</div>
 
 <div class="table-container">
     <table id="data-table">
@@ -425,15 +466,60 @@
         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
 
         // Export the workbook as an Excel file
-        // Create a date string in the format YYYY-MM-DD
-        const today = new Date();
-        const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-        XLSX.writeFile(wb, `STC_data_${dateString}.xlsx`);
+        XLSX.writeFile(wb, 'table_data.xlsx');
     }
 
     document.getElementById('export-button').addEventListener('click', function () {
-        exportExcel();
+        // Show the modal to enter email
+        document.getElementById('email-modal').style.display = 'block';
     });
+
+    // Close modal when clicking on <span> (x)
+    document.getElementById('close-modal').onclick = function () {
+        document.getElementById('email-modal').style.display = 'none';
+    };
+
+    // Close modal when clicking outside of the modal
+    window.onclick = function (event) {
+        const modal = document.getElementById('email-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    document.getElementById('submit-email').addEventListener('click', function () {
+        const email = document.getElementById('email-input').value;
+
+        // Basic email validation
+        if (validateEmail(email)) {
+            // Store email address (you can replace this part with your API call)
+            storeEmail(email);
+
+            // Now, export the Excel file
+            exportExcel();
+
+            // Hide the modal
+            document.getElementById('email-modal').style.display = 'none';
+        } else {
+            alert('Please enter a valid email address.');
+        }
+    });
+
+    // Function to validate email format
+    function validateEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    // Function to store the email (replace with your own logic)
+    function storeEmail(email) {
+        // Here you can implement the logic to store the email address
+        console.log('Email stored:', email);
+    }
+
+
+
+
 
 </script>
 
