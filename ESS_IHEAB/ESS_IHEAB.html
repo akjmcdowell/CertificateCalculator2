@@ -62,7 +62,7 @@
     </style>
 </head>
 <body>
-<p>Use this calculator to review the number of ESCs that are eligible for approved products on the <a href="https://www.veu-registry.vic.gov.au/Public/ProductRegistrySearch.aspx" target="_blank">VEU Registry</a> for the Commercial Heat Pump Water Heater activities.</p>
+<p>Use this calculator to review the number of ESCs that are eligible for approved products on the <a href="https://tessa.energysustainabilityschemes.nsw.gov.au/ipart?id=accepted_products" target="_blank">ESS Registry</a> for the Commercial Heat Pump Water Heater activities.</p>
 
 <label for="postcode"><b>Postcode Lookup:</b></label>
 <input type="text" id="postcode" placeholder="Enter postcode" />
@@ -96,7 +96,7 @@
 
     <label for="zone"><b>Zone:</b></label>
     <select id="zone" name="zone">
-        <option value="zone-4">Zone 4</option>
+        <option value="zone-4">Zone 3</option>
         <option value="zone-5">Zone 5</option>
     </select>
 
@@ -139,9 +139,9 @@
             <tr>
                 <th onclick="sortTable(0, this)">Brand<span class="arrow"></span></th>
                 <th onclick="sortTable(1, this)">Model<span class="arrow"></span></th>
-                <th onclick="sortTable(2, this)">Replace Gas (44A(i))<span class="arrow"></span></th>
-                <th onclick="sortTable(3, this)">Replace Electric (44A(ii))<span class="arrow"></span></th>
-                <th onclick="sortTable(4, this)">Install New (44A(iii))<span class="arrow"></span></th>
+                <th onclick="sortTable(2, this)">Replace Gas (F16)<span class="arrow"></span></th>
+                <th onclick="sortTable(3, this)">Replace Electric (F16)<span class="arrow"></span></th>
+                <th onclick="sortTable(4, this)">Install New (F17)<span class="arrow"></span></th>
             </tr>
         </thead>
         <tbody>
@@ -152,28 +152,28 @@
 
 <script>
     let jsonData = []; // Declare jsonData at the top
-    let data_VEU = [];
+    let data_ESS = [];
     let data_postcodes = [];
     let currentSortColumn = -1; // Keep track of the currently sorted column
     let currentSortDirection = 'ascending'; // Keep track of the sorting direction
 
-    let EEFm, GEF, RFE, RegionalFactor,Lifetime,year,tank,GWP,RepEff,NewEff,region,RfrgCharge,zone;
-    
+    let GCCF,ECCF, RegionalFactor,Lifetime,year,tank,GWP,region,zone;
+
     main();
 
     async function main() {
         try {
-            data_ESS = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/ESS_IHEAB/IHEAB.json');
+            data_ESS = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator2/refs/heads/main/ESS_IHEAB/IHEAB.json');
             data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator2/refs/heads/main/ESS_IHEAB/Postcodes.json');
 
-            if (!Array.isArray(data_VEU)) throw new Error('data_VEU is not an array');
+            if (!Array.isArray(data_ESS)) throw new Error('data_ESS is not an array');
 
             document.getElementById('brand-filter').value = 'all-brands';
             document.getElementById('model-filter').value = 'all-models';
 
-            populateTable(data_VEU); // Populate the table initially
-            populateBrandFilter(data_VEU); // Populate the brand filter
-            populateModelFilter(data_VEU); // Populate the model filter
+            populateTable(data_ESS); // Populate the table initially
+            populateBrandFilter(data_ESS); // Populate the brand filter
+            populateModelFilter(data_ESS); // Populate the model filter
         } catch (error) {
             console.error('Error during initialization:', error);
         }
@@ -185,51 +185,28 @@
         return await response.json();
     }
 
-    function updateVEUParameters() {
+    function updateESSParameters() {
         region = document.getElementById("region").value;
         year = document.getElementById("year").value;
         tank = document.getElementById("tank").value;
         ExistingCapacity = document.getElementById("existing-capacity").value;
         zone = document.getElementById("zone").value;
 
-        GEF = 0.05523;
-        RFE = 5E-4;
-        RepEff = 0.788;
-        NewEff = 0.85;
+        ECCF = 1.06;
+        GCCF = 0.47;
+        Lifetime = 12;
 
         // Check if existingCapacity is 0 or an empty string, and set it to 3.65 if so
         if (ExistingCapacity == 0 || ExistingCapacity === "") {
             ExistingCapacity = 3.6;
         }
 
-        switch (year) {
-            case "2024":
-                EEFm = 0.433;
-                break;
-            case "2025":
-                EEFm = 0.393;
-                break;
-            default:
-                EEFm = 0.433;
-        }
-
-        switch (tank) {
-            case "new":
-                Lifetime = 15;
-                break;
-            case "existing":
-                Lifetime = 10;
-                break;
-            default:
-                Lifetime = 10;
-        }
-
         switch (region) {
             case "metropolitan":
-                RegionalFactor = 0.98;
+                RegionalFactor = 1;
                 break;
             case "regional":
-                RegionalFactor = 1.04;
+                RegionalFactor = 1.03;
                 break;
         }
     }
@@ -238,45 +215,27 @@
     function populateTable(data) {
         const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
         tableBody.innerHTML = ''; // Clear existing data
-        updateVEUParameters();
+        updateESSParameters();
         
         data.forEach(item => {
             const row = document.createElement('tr');         
             
-            HPElec_Z4 = item["Zone 4 HPelec (GJ\/year)"];
-            HPGas_Z4 = item["Zone 4 HPgas (GJ\/year)"];
-            Savings_Z4 = item["Zone 4 Annual Energy Savings (%)"];
-            CPL_Z4 = item["Zone 4 Peak Load (MJ\/day)"];
+            HPElec_Z3 = item["Zone 3 HPelec (GJ\/year)"];
+            HPGas_Z3 = item["Zone 3 HPgas (GJ\/year)"];
+            Savings_Z3 = item["Zone 3 Annual Energy Savings %"];
+            CPL_Z3 = item["Zone 3 Peak Load (MJ\/day)\u00a0"];
 
             HPElec_Z5 = item["Zone 5 HPelec (GJ\/year)"];
             HPGas_Z5 = item["Zone 5 HPgas (GJ\/year)"];
-            Savings_Z5 = item["Zone 5 Annual Energy Savings (%)"];
-            CPL_Z5 = item["Zone 5 Peak Load (MJ\/day)"];
+            Savings_Z5 = item["Zone 5 Annual Energy Savings %"];
+            CPL_Z5 = item["Zone 5 Peak Load (MJ\/day)\u00a0"];
   
-            Capacity = item["Total Heat Pump Thermal Capacity (kW)"];
-            Refrigerant = item["Refrigerant Type (GWP)"];
-            RfrgCharge = item["Refrigerant Charge (kg)"];
-            
+            Capacity = item["Total thermal capacity (kW)"];          
             
             if (Capacity<=ExistingCapacity) {
                 CapacityFactor=1
             } else {
                 CapacityFactor=ExistingCapacity/Capacity;
-            }
-            
-            switch (Refrigerant) {
-                case "R-290":
-                    GWP = 3;
-                    break;
-                case "R-744":
-                    GWP = 1;
-                    break;
-                case "R-134A":
-                    GWP = 1430;
-                    break;
-                case "R-32":
-                    GWP = 675;
-                    break;
             }
             
             // Create individual cells (td) and assign values
@@ -286,39 +245,38 @@
             let modelCell = document.createElement('td');
             modelCell.textContent = item.Model;
 
-            let VEEC_44Ai_Z4 = document.createElement('td');
-            let VEEC_44Ai_Z5 = document.createElement('td');
+            let F16e_Z3 = document.createElement('td');
+            let F16e_Z5 = document.createElement('td');
 
-            let VEEC_44Aii_Z4 = document.createElement('td');
-            let VEEC_44Aii_Z5 = document.createElement('td');
+            let F16g_Z3 = document.createElement('td');
+            let F16g_Z5 = document.createElement('td');
 
-            let VEEC_44Aiii_Z4 = document.createElement('td');
-            let VEEC_44Aiii_Z5 = document.createElement('td');
+            let F17_Z3 = document.createElement('td');
+            let F17_Z5 = document.createElement('td');
 
-            // Calculate VEEC values
+            // Calculate ESC values
             
-            VEEC_44Ai_Z4.textContent = Savings_Z4 >= 60 ? Math.round(VEEC_44Ai(CPL_Z4,HPElec_Z4,HPGas_Z4)) : 0;
-            VEEC_44Ai_Z5.textContent = Savings_Z5 >= 60 ? Math.round(VEEC_44Ai(CPL_Z5,HPElec_Z5,HPGas_Z5)) : 0;
+            F16e_Z3.textContent = Savings_Z3 >= 60 ? Math.floor(F16_elec(CPL,HPElec_Z3,HPGas_Z3,CapacityFactor)) : 0;
+            F16e_Z5.textContent = Savings_Z5 >= 60 ? Math.floor(F16_elec(CPL,HPElec_Z5,HPGas_Z5,CapacityFactor)) : 0;
 
-            VEEC_44Aii_Z4.textContent = Savings_Z4 >= 60 ? Math.round(VEEC_44Aii(CPL_Z4,HPElec_Z4,HPGas_Z4)) : 0;
-            VEEC_44Aii_Z5.textContent = Savings_Z5 >= 60 ? Math.round(VEEC_44Aii(CPL_Z5,HPElec_Z5,HPGas_Z5)) : 0;
+            F16g_Z3.textContent = Savings_Z3 >= 60 ? Math.floor(F16_gas(CPL,HPElec_Z3,HPGas_Z3,CapacityFactor)) : 0;
+            F16g_Z5.textContent = Savings_Z5 >= 60 ? Math.floor(F16_gas(CPL,HPElec_Z5,HPGas_Z5,CapacityFactor)) : 0;
 
-            VEEC_44Aiii_Z4.textContent = Savings_Z4 >= 60 ? Math.round(VEEC_44Aiii(CPL_Z4,HPElec_Z4,HPGas_Z4)) : 0;
-            VEEC_44Aiii_Z5.textContent = Savings_Z5 >= 60 ? Math.round(VEEC_44Aiii(CPL_Z5,HPElec_Z5,HPGas_Z5)) : 0;
-
+            F17_Z3.textContent = Savings_Z3 >= 60 ? Math.floor(F17_new(CPL,HPElec_Z3,HPGas_Z3,CapacityFactor)) : 0;
+            F17_Z5.textContent = Savings_Z5 >= 60 ? Math.floor(F17_new(CPL,HPElec_Z5,HPGas_Z5,CapacityFactor)) : 0;
 
             // Append cells to the row
             row.appendChild(brandCell);
             row.appendChild(modelCell);
 
-            if (zone==='zone-4') {
-                row.appendChild(VEEC_44Ai_Z4);  
-                row.appendChild(VEEC_44Aii_Z4);
-                row.appendChild(VEEC_44Aiii_Z4);
+            if (zone==='zone-3') {
+                row.appendChild(F16e_Z3);  
+                row.appendChild(F16g_Z3);
+                row.appendChild(F17_Z3);
             } else if (zone==='zone-5') {
-                row.appendChild(VEEC_44Ai_Z5);
-                row.appendChild(VEEC_44Aii_Z5);
-                row.appendChild(VEEC_44Aiii_Z5);
+                row.appendChild(F16e_Z5);  
+                row.appendChild(F16g_Z5);
+                row.appendChild(F17_Z5);
             }
 
             // Append the row to the table body
@@ -326,35 +284,28 @@
         });
     }
 
-    function VEEC_44Ai(CPL,HPElec,HPGas) {
+    function F16_gas(CPL,HPElec,HPGas,CapacityFactor) {
         RefElec = 365*0.905*1.05*CPL/1000;
-        VEEC = (GEF*(RefElec/RepEff)-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
-        // console.log("GEF: " + GEF);
-        // console.log("RefElec: " + RefElec);
-        // console.log("RepEff: " + RepEff);
-        // console.log("HPGas:" + HPGas);
-        // console.log("EEFm: "+EEFm);
-        // console.log("RegionalFactor: "+RegionalFactor);
-        // console.log("HPElec: " + HPElec);
-        // console.log("CapacityFactor: " + CapacityFactor);
-        // console.log("RfrgCharge: " +RfrgCharge);
-        // console.log("GWP: " + GWP);
-        // console.log("RFE: " +RFE);
-        //console.log("VEEC 44Ai: "+VEEC);
-
-        return VEEC;
+        GasSavings = (RefElec/0.788-HPGas)*CapacityFactor*Lifetime/3.6;
+        ElecSavings = (-HPElec)*CapacityFactor*Lifetime/3.6;
+        ESC = GasSavings*GCCF + ElecSavings*RegionalFactor*ECCF;
+        return ESC;
     }
 
-    function VEEC_44Aii(CPL,HPElec,HPGas) {
+    function F16_elecCPL(HPElec,HPGas,CapacityFactor) {
         RefElec = 365*0.905*1.05*CPL/1000;
-        VEEC = (EEFm*(RefElec/3.6)*RegionalFactor-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
-        return VEEC;
+        GasSavings = (-HPGas)*CapacityFactor*Lifetime/3.6;
+        ElecSavings = (RefElec-HPElec)*CapacityFactor*Lifetime/3.6;
+        ESC = GasSavings*GCCF + ElecSavings*RegionalFactor*ECCF;
+        return ESC;
     }
 
-    function VEEC_44Aiii(CPL,HPElec,HPGas) {
+    function F17_new(CPL,HPElec,HPGas,CapacityFactor) {
         RefElec = 365*0.905*1.05*CPL/1000;
-        VEEC = (GEF*(RefElec/NewEff)-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
-        return VEEC;
+        GasSavings = (RefElec/0.85-HPGas)*Lifetime/3.6;
+        ElecSavings = (-HPElec)*Lifetime/3.6;
+        ESC = GasSavings*GCCF + ElecSavings*RegionalFactor*ECCF;
+        return ESC;
     }
 
     function populateBrandFilter(data) {
@@ -406,7 +357,7 @@ function updateTableForStorageSizeFilter() {
     minVolume=document.getElementById('min-storage').value;
     maxVolume=document.getElementById('max-storage').value;
     // Filter the data by selected models and storage volume range
-    let filteredData = data_VEU.filter(item => {
+    let filteredData = data_ESS.filter(item => {
         // Check if the model is in the selected brands (if any) and storage volume is within the range
         const Volume = item["Total System Tank Volume (L)"];
         const isModelSelected = selectedBrands.length === 0 || selectedBrands.includes(item.Model);
@@ -428,16 +379,16 @@ function updateTableForSelectedBrandsModels() {
 
     if (selectedBrands.includes('all-brands') && selectedModels.includes('all-models')) {
         // Show all data if both "All Brands" and "All Models" are selected
-        filteredData = data_VEU;
+        filteredData = data_ESS;
     } else if (selectedBrands.includes('all-brands')) {
         // If "All Brands" is selected, show all models for selected models
-        filteredData = data_VEU.filter(item => selectedModels.includes(item.Model));
+        filteredData = data_ESS.filter(item => selectedModels.includes(item.Model));
     } else if (selectedModels.includes('all-models')) {
         // If "All Models" is selected, show all models for selected brands
-        filteredData = data_VEU.filter(item => selectedBrands.includes(item.Brand));
+        filteredData = data_ESS.filter(item => selectedBrands.includes(item.Brand));
     } else {
         // Filter by both selected brands and models
-        filteredData = data_VEU.filter(item =>
+        filteredData = data_ESS.filter(item =>
             selectedBrands.includes(item.Brand) && selectedModels.includes(item.Model)
         );
     }
@@ -448,7 +399,7 @@ function updateTableForSelectedBrandsModels() {
         // Example of populating filters and updating table on selection change
     document.getElementById('brand-filter').addEventListener('change', function() {
         const selectedBrands = Array.from(this.selectedOptions).map(option => option.value);
-        populateModelFilter(data_VEU, selectedBrands);
+        populateModelFilter(data_ESS, selectedBrands);
 
         // Automatically select "All Models" when a brand is selected
         const modelFilter = document.getElementById('model-filter');
@@ -517,14 +468,14 @@ function updateTableForSelectedBrandsModels() {
             resultDiv.innerHTML = `
                 <strong>State:</strong> ${postcodeInfo.State} <br>
                 <strong>Region:</strong> ${postcodeInfo.Location} <br>
-                <strong>VEU Zone:</strong> ${postcodeInfo.Zone_VEU} <br>
+                <strong>ESS Zone:</strong> ${postcodeInfo.Zone_ESS} <br>
             `;
 
             // Change the region dropdown selection based on the postcode
             const regionDropdown = document.getElementById('region');
             regionDropdown.value = postcodeInfo.region.toLowerCase(); // Convert to lowercase to match dropdown values
 
-            // Trigger change event to update the VEU parameters and table
+            // Trigger change event to update the ESS parameters and table
             regionDropdown.dispatchEvent(new Event('change'));
         } else {
             // Display error message
@@ -544,8 +495,8 @@ function updateTableForSelectedBrandsModels() {
 
                // Filter the data based on current selections
         const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
-        ? data_VEU
-        : data_VEU.filter(item =>
+        ? data_ESS
+        : data_ESS.filter(item =>
             (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) &&
             (selectedModels.includes('all-models') || selectedModels.includes(item.Model))
         );
@@ -554,7 +505,7 @@ function updateTableForSelectedBrandsModels() {
     }
 
     function refreshCalculation() {
-        updateVEUParameters(); // Update parameters on region change
+        updateESSParameters(); // Update parameters on region change
         selectedBrand=document.getElementById('brand-filter').value;
         selectedModel=document.getElementById('brand-filter').value;
 
@@ -566,8 +517,8 @@ function updateTableForSelectedBrandsModels() {
         selectedModel = document.getElementById('model-filter').value;
 
         const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? data_VEU
-            : data_VEU.filter(item => 
+            ? data_ESS
+            : data_ESS.filter(item => 
                 (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
                 (selectedModel === 'all-models' || item.Model === selectedModel)
             );
@@ -606,7 +557,7 @@ function exportExcel() {
         // Create a date string in the format YYYY-MM-DD
         const today = new Date();
         const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-        XLSX.writeFile(wb, `VEEC_44_data_${dateString}.xlsx`);
+        XLSX.writeFile(wb, `ESC_IHEAB_data_${dateString}.xlsx`);
     }
 
     document.getElementById('export-button').addEventListener('click', function () {
