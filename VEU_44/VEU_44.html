@@ -49,10 +49,19 @@
                 font-size: 14px; /* Adjust font size if necessary */
             }
         }
+        .filter-container {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Adjust as needed */
+        }
+    
+        .filter-container label,
+        .filter-container select {
+        display: inline-block;
+        }
     </style>
 </head>
 <body>
-<h1>Air Source Heat Pump Models - VEU 44</h1>
 <p>Use this calculator to review the number of Victorian Energy Efficiency Certificates (VEECs) that are eligible for approved products on the <a href="https://www.veu-registry.vic.gov.au/Public/ProductRegistrySearch.aspx" target="_blank">VEU Registry</a> for the Commercial Heat Pump Water Heater activities.</p>
 
 <label for="postcode"><b>Postcode Lookup:</b></label>
@@ -65,8 +74,8 @@
 <p>Select the year of installation and metropolitan or regional area to reflect the correct number of certificates for a given installation:</p>
 
 <div class="filter-container">
-    <label for="location"><b>Choose Location:</b></label>
-    <select id="location" name="location">
+    <label for="region"><b>Choose region:</b></label>
+    <select id="region" name="region">
         <option value="metropolitan">Metropolitan</option>
         <option value="regional">Regional</option>
     </select>
@@ -93,7 +102,6 @@
 
     <label for="existing-capacity"><b>Existing installed capacity (kW):</b></label>
     <input type="text" id="existing-capacity" placeholder="3.6" />
-    <div id="result"></div>
 </div>
 
 <br>
@@ -113,19 +121,13 @@
       <!-- Options will be populated dynamically -->
     </select>
 </div>
-  
-<style>
-    .filter-container {
-      display: flex;
-      align-items: center;
-      gap: 10px; /* Adjust as needed */
-    }
-  
-    .filter-container label,
-    .filter-container select {
-      display: inline-block;
-    }
-</style>
+
+<p>Filter by total thermal storage volume:</p>
+<label for="min-storage"><b>Minimum storage volume:</b></label>
+<input type="text" id="min-storage" placeholder="0" />
+<label for="max-storage"><b>Minimum storage volume:</b></label>
+<input type="text" id="max-storage" placeholder="100000" />
+<button id="storage-filter">Filter</button>
 
 <br>
 <p>Click on any header to sort by alphabetical or numerical order.</p>
@@ -155,16 +157,19 @@
     let currentSortColumn = -1; // Keep track of the currently sorted column
     let currentSortDirection = 'ascending'; // Keep track of the sorting direction
 
-    let EEFm, GEF, RFE, RegionalFactor,Lifetime,year,tank,GWP,RepEff,NewEff;
+    let EEFm, GEF, RFE, RegionalFactor,Lifetime,year,tank,GWP,RepEff,NewEff,region,RfrgCharge,zone;
     
     main();
 
     async function main() {
         try {
-            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/VEU_44.json');
-            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator/refs/heads/main/VEU/Postcodes.json');
+            data_VEU = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator2/refs/heads/main/VEU_44/VEU_44.json');
+            data_postcodes = await fetchData('https://raw.githubusercontent.com/akjmcdowell/CertificateCalculator2/refs/heads/main/VEU_44/Postcodes.json');
 
             if (!Array.isArray(data_VEU)) throw new Error('data_VEU is not an array');
+
+            document.getElementById('brand-filter').value = 'all-brands';
+            document.getElementById('model-filter').value = 'all-models';
 
             populateTable(data_VEU); // Populate the table initially
             populateBrandFilter(data_VEU); // Populate the brand filter
@@ -181,7 +186,7 @@
     }
 
     function updateVEUParameters() {
-        location = document.getElementById("location").value;
+        region = document.getElementById("region").value;
         year = document.getElementById("year").value;
         tank = document.getElementById("tank").value;
         ExistingCapacity = document.getElementById("existing-capacity").value;
@@ -191,6 +196,11 @@
         RFE = 5E-4;
         RepEff = 0.788;
         NewEff = 0.85;
+
+        // Check if existingCapacity is 0 or an empty string, and set it to 3.65 if so
+        if (ExistingCapacity == 0 || ExistingCapacity === "") {
+            ExistingCapacity = 3.6;
+        }
 
         switch (year) {
             case "2024":
@@ -214,7 +224,7 @@
                 Lifetime = 10;
         }
 
-        switch (location) {
+        switch (region) {
             case "metropolitan":
                 RegionalFactor = 0.98;
                 break;
@@ -224,8 +234,8 @@
         }
     }
 
-       // Function to populate the table with data
-       function populateTable(data) {
+    // Function to populate the table with data
+    function populateTable(data) {
         const tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
         tableBody.innerHTML = ''; // Clear existing data
         updateVEUParameters();
@@ -233,21 +243,26 @@
         data.forEach(item => {
             const row = document.createElement('tr');         
             
-            let HPElec_Z4 = item["Zone 4 HPelec (GJ\/year)"];
-            let HPGas_Z4 = item["Zone 4 HPgas (GJ\/year)"];
-            let Savings_Z4 = item["Zone 4 Annual Energy Savings (%)"];
-            let CPL_Z4 = item["Zone 4 Peak Load (MJ\/day)"];
+            HPElec_Z4 = item["Zone 4 HPelec (GJ\/year)"];
+            HPGas_Z4 = item["Zone 4 HPgas (GJ\/year)"];
+            Savings_Z4 = item["Zone 4 Annual Energy Savings (%)"];
+            CPL_Z4 = item["Zone 4 Peak Load (MJ\/day)"];
 
-            let HPElec_Z5 = item["Zone 5 HPelec (GJ\/year)"];
-            let HPGas_Z5 = item["Zone 5 HPgas (GJ\/year)"];
-            let Savings_Z5 = item["Zone 5 Annual Energy Savings (%)"];
-            let CPL_Z5 = item["Zone 5 Peak Load (MJ\/day)"];
-
-            let Capacity = item["Total Heat Pump Thermal Capacity (kW)"];
-            let Refrigerant = item["Refrigerant Type (GWP)"];
-            let RfrgCharge = item["Refrigerant Charge (kg)"];
+            HPElec_Z5 = item["Zone 5 HPelec (GJ\/year)"];
+            HPGas_Z5 = item["Zone 5 HPgas (GJ\/year)"];
+            Savings_Z5 = item["Zone 5 Annual Energy Savings (%)"];
+            CPL_Z5 = item["Zone 5 Peak Load (MJ\/day)"];
+  
+            Capacity = item["Total Heat Pump Thermal Capacity (kW)"];
+            Refrigerant = item["Refrigerant Type (GWP)"];
+            RfrgCharge = item["Refrigerant Charge (kg)"];
             
-            CapacityFactor = Math.min(Capacity/ExistingCapacity,1);
+            
+            if (Capacity<=ExistingCapacity) {
+                CapacityFactor=1
+            } else {
+                CapacityFactor=ExistingCapacity/Capacity;
+            }
             
             switch (Refrigerant) {
                 case "R-290":
@@ -296,11 +311,11 @@
             row.appendChild(brandCell);
             row.appendChild(modelCell);
 
-            if (zone==="zone-4") {
+            if (zone==='zone-4') {
                 row.appendChild(VEEC_44Ai_Z4);  
                 row.appendChild(VEEC_44Aii_Z4);
                 row.appendChild(VEEC_44Aiii_Z4);
-            } else if (zone==="zone-5") {
+            } else if (zone==='zone-5') {
                 row.appendChild(VEEC_44Ai_Z5);
                 row.appendChild(VEEC_44Aii_Z5);
                 row.appendChild(VEEC_44Aiii_Z5);
@@ -312,42 +327,55 @@
     }
 
     function VEEC_44Ai(CPL,HPElec,HPGas) {
-        RefElec = 365*0.905*1.05*CPL;
+        RefElec = 365*0.905*1.05*CPL/1000;
         VEEC = (GEF*(RefElec/RepEff)-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
+        // console.log("GEF: " + GEF);
+        // console.log("RefElec: " + RefElec);
+        // console.log("RepEff: " + RepEff);
+        // console.log("HPGas:" + HPGas);
+        // console.log("EEFm: "+EEFm);
+        // console.log("RegionalFactor: "+RegionalFactor);
+        // console.log("HPElec: " + HPElec);
+        // console.log("CapacityFactor: " + CapacityFactor);
+        // console.log("RfrgCharge: " +RfrgCharge);
+        // console.log("GWP: " + GWP);
+        // console.log("RFE: " +RFE);
+        //console.log("VEEC 44Ai: "+VEEC);
+
         return VEEC;
     }
 
     function VEEC_44Aii(CPL,HPElec,HPGas) {
-        RefElec = 365*0.905*1.05*CPL;
+        RefElec = 365*0.905*1.05*CPL/1000;
         VEEC = (EEFm*(RefElec/3.6)*RegionalFactor-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
         return VEEC;
     }
 
     function VEEC_44Aiii(CPL,HPElec,HPGas) {
-        RefElec = 365*0.905*1.05*CPL;
+        RefElec = 365*0.905*1.05*CPL/1000;
         VEEC = (GEF*(RefElec/NewEff)-GEF*HPGas-EEFm*RegionalFactor*(HPElec/3.6))*CapacityFactor*Lifetime+(1430-GWP)*RFE*RfrgCharge;
         return VEEC;
     }
 
     function populateBrandFilter(data) {
-    const brandFilter = document.getElementById('brand-filter');
-    brandFilter.innerHTML = ''; // Clear existing brands
+        const brandFilter = document.getElementById('brand-filter');
+        brandFilter.innerHTML = ''; // Clear existing brands
 
-    // Add the default "All Brands" option
-    const allBrandsOption = document.createElement('option');
-    allBrandsOption.value = 'all-brands';
-    allBrandsOption.textContent = 'All Brands';
-    brandFilter.appendChild(allBrandsOption);
+        // Add the default "All Brands" option
+        const allBrandsOption = document.createElement('option');
+        allBrandsOption.value = 'all-brands';
+        allBrandsOption.textContent = 'All Brands';
+        brandFilter.appendChild(allBrandsOption);
 
-    const uniqueBrands = [...new Set(data.map(item => item.Brand))].sort();
+        const uniqueBrands = [...new Set(data.map(item => item.Brand))].sort();
 
-    uniqueBrands.forEach(brand => {
-        const option = document.createElement('option');
-        option.value = brand;
-        option.textContent = brand;
-        brandFilter.appendChild(option);
-    });
-}
+        uniqueBrands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandFilter.appendChild(option);
+        });
+    }
 
 function populateModelFilter(data, selectedBrands = []) {
     const modelFilter = document.getElementById('model-filter');
@@ -373,6 +401,24 @@ function populateModelFilter(data, selectedBrands = []) {
     });
 }
 
+function updateTableForStorageSizeFilter() {
+    selectedBrands = [];
+    minVolume=document.getElementById('min-storage').value;
+    maxVolume=document.getElementById('max-storage').value;
+    // Filter the data by selected models and storage volume range
+    let filteredData = data_VEU.filter(item => {
+        // Check if the model is in the selected brands (if any) and storage volume is within the range
+        const Volume = item["Total System Tank Volume (L)"];
+        const isModelSelected = selectedBrands.length === 0 || selectedBrands.includes(item.Model);
+        const isVolumeInRange = Volume >= minVolume && Volume <= maxVolume;
+
+        // Return only items that match both conditions
+        return isModelSelected && isVolumeInRange;
+    });
+
+    // Call your function to update the table with the filtered data
+    populateTable(filteredData); // Update the table with filtered data
+}
 
 function updateTableForSelectedBrandsModels() {
     const selectedBrands = Array.from(document.getElementById('brand-filter').selectedOptions).map(option => option.value);
@@ -398,7 +444,6 @@ function updateTableForSelectedBrandsModels() {
 
     populateTable(filteredData); // Update the table with filtered data
 }
-
 
         // Example of populating filters and updating table on selection change
     document.getElementById('brand-filter').addEventListener('change', function() {
@@ -471,16 +516,16 @@ function updateTableForSelectedBrandsModels() {
             // Display the results
             resultDiv.innerHTML = `
                 <strong>State:</strong> ${postcodeInfo.State} <br>
-                <strong>Location:</strong> ${postcodeInfo.Location} <br>
+                <strong>Region:</strong> ${postcodeInfo.Location} <br>
                 <strong>VEU Zone:</strong> ${postcodeInfo.Zone_VEU} <br>
             `;
 
-            // Change the location dropdown selection based on the postcode
-            const locationDropdown = document.getElementById('location');
-            locationDropdown.value = postcodeInfo.Location.toLowerCase(); // Convert to lowercase to match dropdown values
+            // Change the region dropdown selection based on the postcode
+            const regionDropdown = document.getElementById('region');
+            regionDropdown.value = postcodeInfo.region.toLowerCase(); // Convert to lowercase to match dropdown values
 
             // Trigger change event to update the VEU parameters and table
-            locationDropdown.dispatchEvent(new Event('change'));
+            regionDropdown.dispatchEvent(new Event('change'));
         } else {
             // Display error message
             resultDiv.innerHTML = `<strong>No data found for postcode:</strong> ${postcodeInput}`;
@@ -495,10 +540,10 @@ function updateTableForSelectedBrandsModels() {
             }
             if (selectedModels.length === 0) {
         selectedModels.push('all-models');
-    }
+        }
 
                // Filter the data based on current selections
-    const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
+        const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
         ? data_VEU
         : data_VEU.filter(item =>
             (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) &&
@@ -506,11 +551,33 @@ function updateTableForSelectedBrandsModels() {
         );
 
     populateTable(filteredData); // Update table with filtered data
+    }
 
+    function refreshCalculation() {
+        updateVEUParameters(); // Update parameters on region change
+        selectedBrand=document.getElementById('brand-filter').value;
+        selectedModel=document.getElementById('brand-filter').value;
+
+        document.getElementById('brand-filter').value = 'all-brands';
+        document.getElementById('model-filter').value = 'all-models';
+
+        // Reassign selectedBrand and selectedModel after resetting
+        selectedBrand = document.getElementById('brand-filter').value;
+        selectedModel = document.getElementById('model-filter').value;
+
+        const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
+            ? data_VEU
+            : data_VEU.filter(item => 
+                (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
+                (selectedModel === 'all-models' || item.Model === selectedModel)
+            );
+            
+        populateTable(filteredData); // Update table with filtered data
     }
 
     // Add event listener for button click
     document.getElementById('lookup-button').addEventListener('click', lookupPostcode);
+    document.getElementById('storage-filter').addEventListener('click', updateTableForStorageSizeFilter);
 
     // Add event listener for Enter key press
     document.getElementById('postcode').addEventListener('keydown', function(event) {
@@ -519,65 +586,27 @@ function updateTableForSelectedBrandsModels() {
         }
     });
 
-    // Event listeners for dropdown changes
-    document.getElementById('location').addEventListener('change', function() {
-        updateVEUParameters(); // Update parameters on location change
-        const selectedBrand = document.getElementById('brand-filter').value;
-        const selectedModel = document.getElementById('model-filter').value;
-
-        const filteredData = (selectedBrand === 'all-brands' && selectedModel === 'all-models')
-            ? data_VEU
-            : data_VEU.filter(item => 
-                (selectedBrand === 'all-brands' || item.Brand === selectedBrand) && 
-                (selectedModel === 'all-models' || item.Model === selectedModel)
-            );
-
-        populateTable(filteredData); // Update table with filtered data
-    });
-
-    document.getElementById('year').addEventListener('change', function() {
-    updateVEUParameters(); // Update parameters on year change
-
-    const selectedBrands = Array.from(document.getElementById('brand-filter').selectedOptions).map(option => option.value);
-    const selectedModels = Array.from(document.getElementById('model-filter').selectedOptions).map(option => option.value);
-
-    // Default to "all-brands" and "all-models" if none selected
-    if (selectedBrands.length === 0) {
-        selectedBrands.push('all-brands');
-    }
-    if (selectedModels.length === 0) {
-        selectedModels.push('all-models');
-    }
-
-    // Filter data based on selections
-    const filteredData = (selectedBrands.includes('all-brands') && selectedModels.includes('all-models'))
-        ? data_VEU
-        : data_VEU.filter(item =>
-            (selectedBrands.includes('all-brands') || selectedBrands.includes(item.Brand)) &&
-            (selectedModels.includes('all-models') || selectedModels.includes(item.Model))
-        );
-
-    populateTable(filteredData); // Update table with filtered data
-});
+    // Event listeners for selection changes
+    document.getElementById('tank').addEventListener('change',refreshCalculation);
+    document.getElementById('zone').addEventListener('change',refreshCalculation);
+    document.getElementById('region').addEventListener('change',refreshCalculation);
+    document.getElementById('year').addEventListener('change',refreshCalculation);
+    document.getElementById('existing-capacity').addEventListener('change',refreshCalculation);
 
 function exportExcel() {
         // Get the table element
         const table = document.getElementById('data-table');
-
         // Create a new workbook
         const wb = XLSX.utils.book_new();
-        
         // Convert the HTML table to a worksheet
         const ws = XLSX.utils.table_to_sheet(table);
-        
         // Append the worksheet to the workbook
         XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
         // Export the workbook as an Excel file
         // Create a date string in the format YYYY-MM-DD
         const today = new Date();
         const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-        XLSX.writeFile(wb, `VEEC_1D3C_data_${dateString}.xlsx`);
+        XLSX.writeFile(wb, `VEEC_44_data_${dateString}.xlsx`);
     }
 
     document.getElementById('export-button').addEventListener('click', function () {
