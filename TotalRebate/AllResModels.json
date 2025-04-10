@@ -1124,7 +1124,7 @@
         "Model":"EVO315-C"
     },
     {
-        "Brand":"Evoheat",
+        "Brand":"EVOHEAT",
         "Model":"PASHW015-270LD"
     },
     {
@@ -1361,15 +1361,7 @@
     },
     {
         "Brand":"iHeat",
-        "Model":"PASHW015-270LD*"
-    },
-    {
-        "Brand":"iHeat",
         "Model":"PASHW015-270LD-FL02"
-    },
-    {
-        "Brand":"iHeat\/iStore",
-        "Model":"PASHW015-270LD-FL02-R290"
     },
     {
         "Brand":"iStore",
@@ -2566,10 +2558,6 @@
     {
         "Brand":"Rinnai",
         "Model":"RIN250EHP"
-    },
-    {
-        "Brand":"Rinnai Australia Pty Ltd",
-        "Model":"EHPT250VM"
     },
     {
         "Brand":"SANDEN",
