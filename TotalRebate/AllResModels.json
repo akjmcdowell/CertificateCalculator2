@@ -209,7 +209,7 @@
     },
     {
         "Brand":"Atlantic",
-        "Model":"ODYSSEO 2 - 232605"
+        "Model":"ODYSSEO 2"
     },
     {
         "Brand":"Aura Climate",
@@ -1085,6 +1085,10 @@
     },
     {
         "Brand":"EVOHEAT",
+        "Model":"Evo 270-1"
+    },
+    {
+        "Brand":"EVOHEAT",
         "Model":"EVO150-1"
     },
     {
@@ -1102,10 +1106,6 @@
     {
         "Brand":"EVOHEAT",
         "Model":"EVO270-1"
-    },
-    {
-        "Brand":"EVOHEAT",
-        "Model":"Evo270-1 (NSW)"
     },
     {
         "Brand":"EVOHEAT",
