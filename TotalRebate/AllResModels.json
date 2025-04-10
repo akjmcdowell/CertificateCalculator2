@@ -113,10 +113,6 @@
     },
     {
         "Brand":"Aquatech",
-        "Model":"Dynamic_X8"
-    },
-    {
-        "Brand":"Aquatech",
         "Model":"Flexi-SS\/X4\/C"
     },
     {
@@ -126,10 +122,6 @@
     {
         "Brand":"Aquatech",
         "Model":"Rapid-SS\/X4\/OP"
-    },
-    {
-        "Brand":"Aquatech",
-        "Model":"RAPID\/X6"
     },
     {
         "Brand":"Aquatech",
@@ -704,27 +696,19 @@
         "Model":"ECON330C"
     },
     {
-        "Brand":"Ecosmart",
+        "Brand":"ECOSMART",
         "Model":"E2FHG2000C"
     },
     {
-        "Brand":"EcoSmart",
-        "Model":"E2FHG2000C"
-    },
-    {
-        "Brand":"Ecosmart",
+        "Brand":"ECOSMART",
         "Model":"E2FHG4FP0C"
     },
     {
-        "Brand":"Ecosmart",
+        "Brand":"ECOSMART",
         "Model":"E2FHG4HW0C"
     },
     {
-        "Brand":"Ecosmart",
-        "Model":"E2SHG2000C"
-    },
-    {
-        "Brand":"EcoSmart",
+        "Brand":"ECOSMART",
         "Model":"E2SHG2000C"
     },
     {
@@ -1100,20 +1084,8 @@
         "Model":"261410"
     },
     {
-        "Brand":"Everhot",
-        "Model":null
-    },
-    {
-        "Brand":"EVOHEAT",
-        "Model":"Evo 270-1"
-    },
-    {
         "Brand":"EVOHEAT",
         "Model":"EVO150-1"
-    },
-    {
-        "Brand":"EVOHEAT",
-        "Model":"Evo150-1"
     },
     {
         "Brand":"EVOHEAT",
@@ -1130,10 +1102,6 @@
     {
         "Brand":"EVOHEAT",
         "Model":"EVO270-1"
-    },
-    {
-        "Brand":"EVOHEAT",
-        "Model":"Evo270-1"
     },
     {
         "Brand":"EVOHEAT",
@@ -1156,15 +1124,7 @@
         "Model":"EVO315-C"
     },
     {
-        "Brand":"EVOHEAT",
-        "Model":"Evo315-C"
-    },
-    {
         "Brand":"Evoheat",
-        "Model":"PASHW015-270LD"
-    },
-    {
-        "Brand":"EVOHEAT",
         "Model":"PASHW015-270LD"
     },
     {
@@ -1329,14 +1289,6 @@
     },
     {
         "Brand":"Hydrotherm",
-        "Model":"Dynamic\/X8"
-    },
-    {
-        "Brand":"Hydrotherm",
-        "Model":"Dynamic_X8"
-    },
-    {
-        "Brand":"Hydrotherm",
         "Model":"Flexi-SS\/X4\/C"
     },
     {
@@ -1354,10 +1306,6 @@
     {
         "Brand":"Hydrotherm",
         "Model":"Rapid\/X6"
-    },
-    {
-        "Brand":"HYDROTHERM",
-        "Model":"RAPID\/X6"
     },
     {
         "Brand":"Hydrotherm",
@@ -1545,10 +1493,6 @@
     },
     {
         "Brand":"LJW AUSTRALIA",
-        "Model":"PR-035"
-    },
-    {
-        "Brand":"LJW Australia",
         "Model":"PR-035"
     },
     {
@@ -1840,15 +1784,7 @@
         "Model":"OPT-HP-S-160LT"
     },
     {
-        "Brand":"Optitech",
-        "Model":"OPT-HP-S-160LT"
-    },
-    {
         "Brand":"OPTITECH",
-        "Model":"OPT-HP-S-265LT"
-    },
-    {
-        "Brand":"Optitech",
         "Model":"OPT-HP-S-265LT"
     },
     {
@@ -2488,10 +2424,6 @@
         "Model":"571D270"
     },
     {
-        "Brand":"Rheem",
-        "Model":null
-    },
-    {
         "Brand":"Rinnai",
         "Model":"EHP32-HPST265"
     },
@@ -2648,15 +2580,7 @@
         "Model":"GAUS-160EQTA"
     },
     {
-        "Brand":"SANDEN",
-        "Model":"GAUS-160EQTA"
-    },
-    {
         "Brand":"Sanden",
-        "Model":"GAUS-160EQTAQ"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-160EQTAQ"
     },
     {
@@ -2664,15 +2588,7 @@
         "Model":"GAUS-160EQTB"
     },
     {
-        "Brand":"SANDEN",
-        "Model":"GAUS-160EQTB"
-    },
-    {
         "Brand":"Sanden",
-        "Model":"GAUS-160FQS"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-160FQS"
     },
     {
@@ -2685,14 +2601,6 @@
     },
     {
         "Brand":"Sanden",
-        "Model":"GAUS-160FQTS"
-    },
-    {
-        "Brand":"Sanden",
-        "Model":"GAUS-250EQTA"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-250EQTA"
     },
     {
@@ -2700,15 +2608,7 @@
         "Model":"GAUS-250EQTAQ"
     },
     {
-        "Brand":"SANDEN",
-        "Model":"GAUS-250EQTAQ"
-    },
-    {
         "Brand":"Sanden",
-        "Model":"GAUS-250EQTB"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-250EQTB"
     },
     {
@@ -2717,22 +2617,10 @@
     },
     {
         "Brand":"SANDEN",
-        "Model":"GAUS-250FQS"
-    },
-    {
-        "Brand":"SANDEN",
-        "Model":"GAUS-250FQTD"
-    },
-    {
-        "Brand":"Sanden",
         "Model":"GAUS-250FQTD"
     },
     {
         "Brand":"SANDEN",
-        "Model":"GAUS-250FQTS"
-    },
-    {
-        "Brand":"Sanden",
         "Model":"GAUS-250FQTS"
     },
     {
@@ -2745,14 +2633,6 @@
     },
     {
         "Brand":"SANDEN",
-        "Model":"GAUS-300FQS"
-    },
-    {
-        "Brand":"SANDEN",
-        "Model":"GAUS-300FQTD"
-    },
-    {
-        "Brand":"Sanden",
         "Model":"GAUS-300FQTD"
     },
     {
@@ -2761,14 +2641,6 @@
     },
     {
         "Brand":"Sanden",
-        "Model":"GAUS-300FQTS"
-    },
-    {
-        "Brand":"Sanden",
-        "Model":"GAUS-315EQS"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-315EQS"
     },
     {
@@ -2776,15 +2648,7 @@
         "Model":"GAUS-315EQT"
     },
     {
-        "Brand":"SANDEN",
-        "Model":"GAUS-315EQT"
-    },
-    {
         "Brand":"Sanden",
-        "Model":"GAUS-315EQTAQ"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-315EQTAQ"
     },
     {
@@ -2809,22 +2673,10 @@
     },
     {
         "Brand":"SANDEN",
-        "Model":"GAUS-315FQS"
-    },
-    {
-        "Brand":"SANDEN",
-        "Model":"GAUS-315FQTD"
-    },
-    {
-        "Brand":"Sanden",
         "Model":"GAUS-315FQTD"
     },
     {
         "Brand":"SANDEN",
-        "Model":"GAUS-315FQTS"
-    },
-    {
-        "Brand":"Sanden",
         "Model":"GAUS-315FQTS"
     },
     {
@@ -2833,14 +2685,6 @@
     },
     {
         "Brand":"Sanden",
-        "Model":"GAUS-315FQTV"
-    },
-    {
-        "Brand":"Sanden",
-        "Model":"GAUS-315FQV"
-    },
-    {
-        "Brand":"SANDEN",
         "Model":"GAUS-315FQV"
     },
     {
@@ -3048,15 +2892,7 @@
         "Model":"WH250A-R"
     },
     {
-        "Brand":"Smart Power Tech",
-        "Model":"WH250A-R"
-    },
-    {
         "Brand":"SMART POWER TECH",
-        "Model":"WH250A-RE"
-    },
-    {
-        "Brand":"Smart Power Tech",
         "Model":"WH250A-RE"
     },
     {
@@ -3369,10 +3205,6 @@
     },
     {
         "Brand":"ThermalArk",
-        "Model":"PashW015-200LD"
-    },
-    {
-        "Brand":"ThermalArk",
         "Model":"PASHW015-270LD"
     },
     {
@@ -3588,10 +3420,6 @@
         "Model":"651180"
     },
     {
-        "Brand":"Vulcan",
-        "Model":null
-    },
-    {
         "Brand":"Wilson Heat Pumps",
         "Model":"WHPS-160A"
     },
@@ -3608,15 +3436,7 @@
         "Model":"WL-R290-200"
     },
     {
-        "Brand":"Wiseliving",
-        "Model":"WL-R290-200"
-    },
-    {
         "Brand":"WISELIVING",
-        "Model":"WL-R290-270"
-    },
-    {
-        "Brand":"Wiseliving",
         "Model":"WL-R290-270"
     },
     {
